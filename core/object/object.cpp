@@ -312,10 +312,6 @@ bool Object::_predelete() {
 	}
 #endif
 
-#ifdef TOOLS_ENABLED
-	_predelete_this_in_editor();
-#endif
-
 	return true;
 }
 

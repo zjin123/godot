@@ -463,8 +463,3 @@ public:
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
 VARIANT_ENUM_CAST(LineEdit::VirtualKeyboardType);
 VARIANT_ENUM_CAST(LineEdit::ExpandMode);
-
-#ifdef TOOLS_ENABLED
-void postinitialize_handler_in_editor(LineEdit *);
-void predelete_handler_in_editor(LineEdit *);
-#endif

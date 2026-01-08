@@ -38,21 +38,24 @@ static Ref<EditorSettingsHelper> singleton;
 
 void EditorSettingsHelper::create() {
 	ERR_FAIL_COND_MSG(singleton.is_valid(), "Can't recreate EditorSettingsHelper as it already exists.");
-	singleton.instantiate();
-	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(singleton.ptr(), &EditorSettingsHelper::_settings_changed));
-}
 
-EditorSettingsHelper *EditorSettingsHelper::get_singleton() {
-	return singleton.ptr();
+	singleton.instantiate();
+	SceneTree::get_singleton()->connect("node_added", callable_mp(singleton.ptr(), &EditorSettingsHelper::_scene_tree_node_added));
+	SceneTree::get_singleton()->connect("node_removed", callable_mp(singleton.ptr(), &EditorSettingsHelper::_scene_tree_node_removed));
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(singleton.ptr(), &EditorSettingsHelper::_settings_changed));
 }
 
 void EditorSettingsHelper::destroy() {
 	if (singleton.is_null()) {
 		return;
 	}
+
 	DEV_ASSERT(singleton->text_edits.is_empty());
 	DEV_ASSERT(singleton->line_edits.is_empty());
+
 	EditorSettings::get_singleton()->disconnect("settings_changed", callable_mp(singleton.ptr(), &EditorSettingsHelper::_settings_changed));
+	SceneTree::get_singleton()->disconnect("node_added", callable_mp(singleton.ptr(), &EditorSettingsHelper::_scene_tree_node_added));
+	SceneTree::get_singleton()->disconnect("node_removed", callable_mp(singleton.ptr(), &EditorSettingsHelper::_scene_tree_node_removed));
 	singleton = Ref<EditorSettingsHelper>();
 }
 
@@ -75,44 +78,26 @@ void EditorSettingsHelper::_settings_changed() {
 	}
 }
 
-void EditorSettingsHelper::postinitialize_text_edit(TextEdit *p_text_edit) {
-	p_text_edit->connect(SceneStringName(tree_entered), callable_mp(this, &EditorSettingsHelper::_text_edit_tree_entered).bind(p_text_edit));
-}
-
-void EditorSettingsHelper::predelete_text_edit(TextEdit *p_text_edit) {
-	text_edits.erase(p_text_edit);
-}
-
-void EditorSettingsHelper::_text_edit_tree_entered(TextEdit *p_text_edit) {
-	if (!p_text_edit->is_part_of_edited_scene()) {
-		text_edits.push_front(p_text_edit);
-		p_text_edit->connect(SceneStringName(tree_exited), callable_mp(this, &EditorSettingsHelper::_text_edit_tree_exited).bind(p_text_edit), CONNECT_ONE_SHOT);
-		p_text_edit->set_middle_mouse_paste_enabled(EDITOR_GET("text_editor/behavior/general/middle_mouse_paste"));
+void EditorSettingsHelper::_scene_tree_node_added(Node *p_node) {
+	if (Engine::get_singleton()->is_editor_hint() && !p_node->is_part_of_edited_scene()) {
+		if (TextEdit *text_edit = dynamic_cast<TextEdit *>(p_node)) {
+			text_edits.push_back(text_edit);
+			text_edit->set_middle_mouse_paste_enabled(EDITOR_GET("text_editor/behavior/general/middle_mouse_paste"));
+		} else if (LineEdit *line_edit = dynamic_cast<LineEdit *>(p_node)) {
+			line_edits.push_back(line_edit);
+			line_edit->set_middle_mouse_paste_enabled(EDITOR_GET("text_editor/behavior/general/middle_mouse_paste"));
+			line_edit->set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
+			line_edit->set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
+		}
 	}
 }
 
-void EditorSettingsHelper::_text_edit_tree_exited(TextEdit *p_text_edit) {
-	text_edits.erase(p_text_edit);
-}
-
-void EditorSettingsHelper::postinitialize_line_edit(LineEdit *p_line_edit) {
-	p_line_edit->connect(SceneStringName(tree_entered), callable_mp(this, &EditorSettingsHelper::_line_edit_tree_entered).bind(p_line_edit));
-}
-
-void EditorSettingsHelper::predelete_line_edit(LineEdit *p_line_edit) {
-	line_edits.erase(p_line_edit);
-}
-
-void EditorSettingsHelper::_line_edit_tree_entered(LineEdit *p_line_edit) {
-	if (!p_line_edit->is_part_of_edited_scene()) {
-		line_edits.push_front(p_line_edit);
-		p_line_edit->connect(SceneStringName(tree_exited), callable_mp(this, &EditorSettingsHelper::_line_edit_tree_exited).bind(p_line_edit), CONNECT_ONE_SHOT);
-		p_line_edit->set_middle_mouse_paste_enabled(EDITOR_GET("text_editor/behavior/general/middle_mouse_paste"));
-		p_line_edit->set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
-		p_line_edit->set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
+void EditorSettingsHelper::_scene_tree_node_removed(Node *p_node) {
+	if (Engine::get_singleton()->is_editor_hint() && !p_node->is_part_of_edited_scene()) {
+		if (TextEdit *text_edit = dynamic_cast<TextEdit *>(p_node)) {
+			text_edits.erase(text_edit);
+		} else if (LineEdit *line_edit = dynamic_cast<LineEdit *>(p_node)) {
+			line_edits.erase(line_edit);
+		}
 	}
-}
-
-void EditorSettingsHelper::_line_edit_tree_exited(LineEdit *p_line_edit) {
-	line_edits.erase(p_line_edit);
 }

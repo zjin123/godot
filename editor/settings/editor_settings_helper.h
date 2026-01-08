@@ -32,6 +32,7 @@
 
 #include "core/object/ref_counted.h"
 
+class Node;
 class TextEdit;
 class LineEdit;
 
@@ -40,21 +41,13 @@ class EditorSettingsHelper : public RefCounted {
 
 public:
 	static void create();
-	static EditorSettingsHelper *get_singleton();
 	static void destroy();
 
-	void postinitialize_text_edit(TextEdit *p_text_edit);
-	void predelete_text_edit(TextEdit *p_text_edit);
-	void postinitialize_line_edit(LineEdit *p_line_edit);
-	void predelete_line_edit(LineEdit *p_line_edit);
-
 private:
+	void _scene_tree_node_added(Node *p_node);
+	void _scene_tree_node_removed(Node *p_node);
 	void _settings_changed();
-	void _text_edit_tree_entered(TextEdit *p_text_edit);
-	void _text_edit_tree_exited(TextEdit *p_text_edit);
-	void _line_edit_tree_entered(LineEdit *p_line_edit);
-	void _line_edit_tree_exited(LineEdit *p_line_edit);
 
-	List<TextEdit *> text_edits;
-	List<LineEdit *> line_edits;
+	LocalVector<TextEdit *> text_edits;
+	LocalVector<LineEdit *> line_edits;
 };

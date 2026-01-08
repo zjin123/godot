@@ -1208,8 +1208,3 @@ VARIANT_ENUM_CAST(TextEdit::SelectionMode);
 VARIANT_ENUM_CAST(TextEdit::GutterType);
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
-
-#ifdef TOOLS_ENABLED
-void postinitialize_handler_in_editor(TextEdit *);
-void predelete_handler_in_editor(TextEdit *);
-#endif
