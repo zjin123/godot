@@ -847,6 +847,8 @@ void SceneTree::finalize() {
 	_flush_ugc();
 
 	if (root) {
+		emit_signal("_tree_finalizing");
+
 		root->_set_tree(nullptr);
 		root->_propagate_after_exit_tree();
 		memdelete(root); //delete root
@@ -1952,6 +1954,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolation"), "set_physics_interpolation_enabled", "is_physics_interpolation_enabled");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
+	ADD_SIGNAL(MethodInfo("_tree_finalizing"));
 	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("tree_process_mode_changed")); //editor only signal, but due to API hash it can't be removed in run-time
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));

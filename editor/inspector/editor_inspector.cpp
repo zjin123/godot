@@ -5487,6 +5487,10 @@ void EditorInspector::_node_removed(Node *p_node) {
 	}
 }
 
+void EditorInspector::_tree_finalizing() {
+	edit(nullptr);
+}
+
 void EditorInspector::_update_current_favorites() {
 	current_favorites.clear();
 	if (!can_favorite) {
@@ -5690,12 +5694,14 @@ void EditorInspector::_notification(int p_what) {
 			set_process(is_visible_in_tree());
 			if (!is_sub_inspector()) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
+				get_tree()->connect("_tree_finalizing", callable_mp(this, &EditorInspector::_tree_finalizing));
 			}
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
 			if (!is_sub_inspector() && is_inside_tree()) {
 				get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
+				get_tree()->disconnect("_tree_finalizing", callable_mp(this, &EditorInspector::_tree_finalizing));
 			}
 			edit(nullptr);
 		} break;
