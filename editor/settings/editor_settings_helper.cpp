@@ -79,7 +79,7 @@ void EditorSettingsHelper::_settings_changed() {
 }
 
 void EditorSettingsHelper::_scene_tree_node_added(Node *p_node) {
-	if (Engine::get_singleton()->is_editor_hint() && !p_node->is_part_of_edited_scene()) {
+	if (!p_node->is_part_of_edited_scene()) {
 		if (TextEdit *text_edit = dynamic_cast<TextEdit *>(p_node)) {
 			text_edits.push_back(text_edit);
 			text_edit->set_middle_mouse_paste_enabled(EDITOR_GET("text_editor/behavior/general/middle_mouse_paste"));
@@ -93,7 +93,7 @@ void EditorSettingsHelper::_scene_tree_node_added(Node *p_node) {
 }
 
 void EditorSettingsHelper::_scene_tree_node_removed(Node *p_node) {
-	if (Engine::get_singleton()->is_editor_hint() && !p_node->is_part_of_edited_scene()) {
+	if (!p_node->is_part_of_edited_scene()) {
 		if (TextEdit *text_edit = dynamic_cast<TextEdit *>(p_node)) {
 			text_edits.erase(text_edit);
 		} else if (LineEdit *line_edit = dynamic_cast<LineEdit *>(p_node)) {
