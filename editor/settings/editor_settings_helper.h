@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
-#include "core/templates/list.h"
 
 class TextEdit;
 class LineEdit;

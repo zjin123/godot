@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "editor/settings/editor_settings_helper.h"
+
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/text_edit.h"
@@ -36,10 +37,7 @@
 static Ref<EditorSettingsHelper> singleton;
 
 void EditorSettingsHelper::create() {
-	if (singleton.ptr()) {
-		ERR_PRINT("Can't recreate EditorSettingsHelper as it already exists.");
-		return;
-	}
+	ERR_FAIL_COND_MSG(singleton.is_valid(), "Can't recreate EditorSettingsHelper as it already exists.");
 	singleton.instantiate();
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(singleton.ptr(), &EditorSettingsHelper::_settings_changed));
 }
@@ -49,7 +47,7 @@ EditorSettingsHelper *EditorSettingsHelper::get_singleton() {
 }
 
 void EditorSettingsHelper::destroy() {
-	if (!singleton.ptr()) {
+	if (singleton.is_null()) {
 		return;
 	}
 	DEV_ASSERT(singleton->text_edits.is_empty());
@@ -60,19 +58,19 @@ void EditorSettingsHelper::destroy() {
 
 void EditorSettingsHelper::_settings_changed() {
 	const bool middle_mouse_paste_enabled = EDITOR_GET("text_editor/behavior/general/middle_mouse_paste");
-	for (List<TextEdit *>::Element *E = text_edits.front(); E; E = E->next()) {
-		E->get()->set_middle_mouse_paste_enabled(middle_mouse_paste_enabled);
+	for (TextEdit *E : text_edits) {
+		E->set_middle_mouse_paste_enabled(middle_mouse_paste_enabled);
 	}
-	for (List<LineEdit *>::Element *E = line_edits.front(); E; E = E->next()) {
-		E->get()->set_middle_mouse_paste_enabled(middle_mouse_paste_enabled);
+	for (LineEdit *E : line_edits) {
+		E->set_middle_mouse_paste_enabled(middle_mouse_paste_enabled);
 	}
 
 	if (EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/appearance/caret")) {
 		const bool caret_blink = EDITOR_GET("text_editor/appearance/caret/caret_blink");
 		const float caret_blink_interval = EDITOR_GET("text_editor/appearance/caret/caret_blink_interval");
-		for (List<LineEdit *>::Element *E = line_edits.front(); E; E = E->next()) {
-			E->get()->set_caret_blink_enabled(caret_blink);
-			E->get()->set_caret_blink_interval(caret_blink_interval);
+		for (LineEdit *E : line_edits) {
+			E->set_caret_blink_enabled(caret_blink);
+			E->set_caret_blink_interval(caret_blink_interval);
 		}
 	}
 }
