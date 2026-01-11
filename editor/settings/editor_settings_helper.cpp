@@ -79,25 +79,37 @@ void EditorSettingsHelper::_settings_changed() {
 }
 
 void EditorSettingsHelper::_scene_tree_node_added(Node *p_node) {
-	if (!p_node->is_part_of_edited_scene()) {
-		if (TextEdit *text_edit = dynamic_cast<TextEdit *>(p_node)) {
-			text_edits.push_back(text_edit);
-			text_edit->set_middle_mouse_paste_enabled(EDITOR_GET("text_editor/behavior/general/middle_mouse_paste"));
-		} else if (LineEdit *line_edit = dynamic_cast<LineEdit *>(p_node)) {
-			line_edits.push_back(line_edit);
-			line_edit->set_middle_mouse_paste_enabled(EDITOR_GET("text_editor/behavior/general/middle_mouse_paste"));
-			line_edit->set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
-			line_edit->set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
-		}
+	if (p_node->is_part_of_edited_scene()) {
+		return;
+	}
+
+	TextEdit *text_edit = Object::cast_to<TextEdit>(p_node);
+	if (unlikely(text_edit)) {
+		text_edits.push_back(text_edit);
+		text_edit->set_middle_mouse_paste_enabled(EDITOR_GET("text_editor/behavior/general/middle_mouse_paste"));
+	}
+
+	LineEdit *line_edit = Object::cast_to<LineEdit>(p_node);
+	if (unlikely(line_edit)) {
+		line_edits.push_back(line_edit);
+		line_edit->set_middle_mouse_paste_enabled(EDITOR_GET("text_editor/behavior/general/middle_mouse_paste"));
+		line_edit->set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
+		line_edit->set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
 	}
 }
 
 void EditorSettingsHelper::_scene_tree_node_removed(Node *p_node) {
-	if (!p_node->is_part_of_edited_scene()) {
-		if (TextEdit *text_edit = dynamic_cast<TextEdit *>(p_node)) {
-			text_edits.erase(text_edit);
-		} else if (LineEdit *line_edit = dynamic_cast<LineEdit *>(p_node)) {
-			line_edits.erase(line_edit);
-		}
+	if (p_node->is_part_of_edited_scene()) {
+		return;
+	}
+
+	TextEdit *text_edit = Object::cast_to<TextEdit>(p_node);
+	if (unlikely(text_edit)) {
+		text_edits.erase(text_edit);
+	}
+
+	LineEdit *line_edit = Object::cast_to<LineEdit>(p_node);
+	if (unlikely(line_edit)) {
+		line_edits.erase(line_edit);
 	}
 }
